@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  controller:
+    build: .
+    hostname: controller
+    container_name: slurm-controller
+    environment:
+      - ROLE=controller
+    volumes:
+      - munge-etc:/etc/munge
+      - /home/drashko/slurm-mini/slurm_shared:/slurm_shared
+    networks:
+      - slurmnet
+    healthcheck:
+      test: ["CMD-SHELL", "test -S /run/munge/munge.socket.2 && munge -n | unmunge >/dev/null 2>&1"]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+      start_period: 10s
+
+  c1:
+    build: .
+    hostname: c1
+    container_name: slurm-c1
+    environment:
+      - ROLE=node
+    depends_on:
+      controller:
+        condition: service_healthy
+    volumes:
+      - munge-etc:/etc/munge
+      - /home/drashko/slurm-mini/slurm_shared:/slurm_shared
+    networks:
+      - slurmnet
+    healthcheck:
+      test: ["CMD-SHELL", "test -S /run/munge/munge.socket.2 && munge -n | unmunge >/dev/null 2>&1"]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+      start_period: 10s
+
+  c2:
+    build: .
+    hostname: c2
+    container_name: slurm-c2
+    environment:
+      - ROLE=node
+    depends_on:
+      controller:
+        condition: service_healthy
+    volumes:
+      - munge-etc:/etc/munge
+      - /home/drashko/slurm-mini/slurm_shared:/slurm_shared
+    networks:
+      - slurmnet
+    healthcheck:
+      test: ["CMD-SHELL", "test -S /run/munge/munge.socket.2 && munge -n | unmunge >/dev/null 2>&1"]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  munge-etc:
+
+networks:
+  slurmnet:
